@@ -7,11 +7,17 @@ from telegram.ext import Updater, CommandHandler, MessageHandler, typehandler, F
 
 towork = True
 
+
 def c_help(bot, update):
     bot.sendMessage(chat_id=update.message.chat_id,
                     text="""Supported commands:
-/help - Show this""")
+/help - Show this
+/thesis thesisname - Not realized yet""")
 
+
+def thesis(bot, update):
+    bot.sendMessage(chat_id=update.message.chat_id,
+                    text="IN DEVELOPMENT SORRY")
 
 if os.path.isfile("config.json"):
     config_file = open("config.json", "r")
