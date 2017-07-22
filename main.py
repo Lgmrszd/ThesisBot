@@ -26,7 +26,7 @@ dp = updater.dispatcher
 # Add handlers for Telegram messages
 help_handler = CommandHandler('help', c_help)
 dp.add_handler(help_handler)
-help_handler = CommandHandler('help', c_help)
-dp.add_handler(help_handler)
+thesis_handler = CommandHandler('thesis', thesis)
+dp.add_handler(thesis_handler)
 updater.start_polling()
 updater.idle()
