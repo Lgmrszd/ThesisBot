@@ -1,16 +1,44 @@
 import os
 import urllib.parse as urlparse
-from pgdb import connect
+from pg import DB
+import time
+import datetime
 
 urlparse.uses_netloc.append("postgres")
 if os.environ.get("DATABASE_URL"):
     url = urlparse.urlparse(os.environ.get("DATABASE_URL"))
-else
+else:
     raise EnvironmentError("DATABASE_URL not found")
 
-conn = connect(
-    database=url.path[1:],
+db = DB(
+    dbname=url.path[1:],
     user=url.username,
-    password=url.password,
-    host=url.hostname+":"+str(url.port)
+    passwd=url.password,
+    host=url.hostname,
+    port=url.port
 )
+
+def insertThesis(init_id, chat_id, user_id, body):
+    global db
+    ts = time.time()
+    timestamp = datetime.datetime.fromtimestamp(ts).strftime('%Y-%m-%d %H:%M:%S')
+    db.insert('theses', row={"init_id":init_id, "chat_id":chat_id, "user_id":user_id, "body":body, "time":timestamp})
+    db.commit()
+
+def insertUser(user_id, username, first_name, last_name):
+    print(user_id, username, first_name, last_name)
+    global db
+    ts = time.time()
+    row = {"user_id":user_id}
+    if username:
+        row["username"] = username
+    if first_name:
+        row["first_name"] = first_name
+    if last_name:
+        row["last_name"] = last_name
+    db.insert('users', row=row)
+    db.commit()
+
+
+def close():
+    db.close()
