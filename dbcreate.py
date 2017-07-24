@@ -32,8 +32,8 @@ CREATE TABLE theses (
     init_id         bigint,
     chat_id         bigint,
     user_id         bigint REFERENCES users (user_id),
-    body            TEXT,
-    time            timestamp,
+    body            TEXT UNIQUE,
+    creation_time   timestamp with time zone DEFAULT current_timestamp,
     PRIMARY KEY (init_id, chat_id)
 );
 """)
