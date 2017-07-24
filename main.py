@@ -27,11 +27,18 @@ def thesis(bot, update, args):
         print("OK")
         user = update.message.from_user
         bot.sendMessage(chat_id=message.chat_id,
-                        text="chat id: %s, user id: %s, username: %s, chat type: %s\n"%(message.chat_id, user.id, user.username, message.chat.type)+\
+                        text="chat id: %s, user id: %s, username: %s, chat type: %s\n"%(message.chat.id, user.id, user.username, message.chat.type)+\
                         "args: "+" ".join(args))
-        dbconfig.insertThesis(init_id=message.message_id, chat_id=message.chat_id, user_id=user.id, body=" ".join(args))
-        dbconfig.insertUser(user_id=user.user_id, username=user.username,\
-                            first_name=user.first_name, last_name=user.last_name)
+        print("INSERTING USER")
+        dbuser = dbconfig.getUser(user.id)
+        if not dbuser:
+            print("ADDING USER")
+            dbconfig.insertUser(user_id=user.id, username=user.username, first_name=user.first_name, last_name=user.last_name)
+        else:
+            print("ALREADY HAVE THAT USER")
+        print("INSERTING THESIS")
+        dbconfig.insertThesis(init_id=message.message_id, chat_id=message.chat.id, user_id=user.id, body=" ".join(args))
+        print("DONE")
 
 
 TOKEN = os.environ.get("TOKEN")

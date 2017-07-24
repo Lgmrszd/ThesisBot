@@ -19,17 +19,18 @@ cur = conn.cursor()
 
 cur.execute("""
 CREATE TABLE theses (
-    init_id         int,
-    chat_id         int,
-    user_id         int,
+    init_id         bigint,
+    chat_id         bigint,
+    user_id         bigint REFERENCES users (user_id),
     body            TEXT,
-    time            timestamp
+    time            timestamp,
+    PRIMARY KEY (init_id, chat_id)
 );
 """)
 conn.commit()
 cur.execute("""
 CREATE TABLE users (
-    user_id         int,
+    user_id         bigint PRIMARY KEY,
     username        TEXT,
     first_name      TEXT,
     last_name       TEXT
