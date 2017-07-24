@@ -18,6 +18,16 @@ conn = connect(
 cur = conn.cursor()
 
 cur.execute("""
+CREATE TABLE users (
+    user_id         bigint PRIMARY KEY,
+    username        TEXT,
+    first_name      TEXT,
+    last_name       TEXT
+);
+""")
+conn.commit()
+
+cur.execute("""
 CREATE TABLE theses (
     init_id         bigint,
     chat_id         bigint,
@@ -25,15 +35,6 @@ CREATE TABLE theses (
     body            TEXT,
     time            timestamp,
     PRIMARY KEY (init_id, chat_id)
-);
-""")
-conn.commit()
-cur.execute("""
-CREATE TABLE users (
-    user_id         bigint PRIMARY KEY,
-    username        TEXT,
-    first_name      TEXT,
-    last_name       TEXT
 );
 """)
 conn.commit()
