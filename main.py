@@ -13,8 +13,8 @@ def c_help(bot, update):
                     text="""Supported commands:
 /help - Show this
 /thesis thesis text
-/last30minsTheses
-/last5hoursTheses""")
+/last30minsTheses - get theses for last 30 minutes
+/last5hoursTheses - get theses for last 5 hours""")
 
 def fromUTCtoTZ(dt):
     tz=datetime.timezone(datetime.timedelta(hours=3))
