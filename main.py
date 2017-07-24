@@ -40,11 +40,14 @@ def thesis(bot, update, args):
         dbconfig.insertThesis(init_id=message.message_id, chat_id=message.chat.id, user_id=user.id, body=" ".join(args))
         print("DONE")
 
+def stopAll(signum=None, frame=None):
+    print("STOPPING")
+    dbconfig.close()
 
 TOKEN = os.environ.get("TOKEN")
 if not TOKEN:
     raise EnvironmentError("TOKEN not found")
-updater = Updater(TOKEN)
+updater = Updater(TOKEN, user_sig_handler=stopAll)
 # Get the dispatcher to register handlers
 dp = updater.dispatcher
 # Add handlers for Telegram messages
