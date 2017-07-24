@@ -12,7 +12,7 @@ def c_help(bot, update):
     bot.sendMessage(chat_id=update.message.chat_id,
                     text="""Supported commands:
 /help - Show this
-/thesis thesisname - Not realized yet
+/thesis thesis text
 /last30minsTheses
 /last5hoursTheses""")
 
