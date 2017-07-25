@@ -2,10 +2,22 @@ import os.path
 import datetime
 import dbconfig
 import logging
-from telegram import User, InlineQueryResultArticle, InputTextMessageContent, KeyboardButton, ReplyKeyboardMarkup, InlineKeyboardButton, InlineKeyboardMarkup
+from telegram import User, InlineQueryResultArticle, InputTextMessageContent, KeyboardButton, ReplyKeyboardMarkup, \
+    InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import Updater, CommandHandler, InlineQueryHandler
 
 logging.basicConfig(format='[%(asctime)s][%(levelname)s]:%(message)s', level=logging.DEBUG, datefmt='%d.%m.%Y %H:%M:%S')
+
+
+def thesisToText(interval, text, stime):
+    return ("\n"
+            "—— ‼️ Theses in last %s ‼️ ——\n"
+            "\n"
+            "✅ %s \n"
+            "~ published at %s \n"
+            "\n"
+            "—— end of thesis ——") % (interval, text, stime)
+
 
 def c_help(bot, update):
     bot.sendMessage(chat_id=update.message.chat_id,
@@ -17,7 +29,7 @@ def c_help(bot, update):
 
 
 def fromUTCtoTZ(dt):
-    tz=datetime.timezone(datetime.timedelta(hours=3))
+    tz = datetime.timezone(datetime.timedelta(hours=3))
     return dt.astimezone(tz)
 
 
@@ -26,12 +38,12 @@ def last30minsTheses(bot, update):
     theses = dbconfig.getLast30minsTheses(message.chat_id)
     str_theses = []
     for t in theses:
-        stime = fromUTCtoTZ(t['creation_time']).strftime('%Y-%m-%d %H:%M:%S')
+        stime = fromUTCtoTZ(t['creation_time']).strftime('%m.%d %H:%M:%S')
         tbody = t['body']
-        st = "thesis time: %s\ntext:\n%s"%(stime, tbody)
+        st = thesisToText("30 minutes", tbody, st)
         str_theses.append(st)
     bot.sendMessage(chat_id=message.chat_id,
-                    text="Theses in last 30 minutes:\n\n"+"\n".join(str_theses))
+                    text="Theses in last 30 minutes:\n\n" + "\n".join(str_theses))
 
 
 def last5hoursTheses(bot, update):
@@ -41,10 +53,10 @@ def last5hoursTheses(bot, update):
     for t in theses:
         stime = fromUTCtoTZ(t['creation_time']).strftime('%Y-%m-%d %H:%M:%S')
         tbody = t['body']
-        st = "thesis time: %s\ntext:\n%s"%(stime, tbody)
+        st = "thesis time: %s\ntext:\n%s" % (stime, tbody)
         str_theses.append(st)
     bot.sendMessage(chat_id=message.chat_id,
-                    text="Theses in last 5 hours:\n\n"+"\n".join(str_theses))
+                    text="Theses in last 5 hours:\n\n" + "\n".join(str_theses))
 
 
 def thesis(bot, update, args):
@@ -63,14 +75,16 @@ def thesis(bot, update, args):
         dbuser = dbconfig.getUserById(user.id)
         if not dbuser:
             print("ADDING USER")
-            dbconfig.insertUser(user_id=user.id, username=user.username, first_name=user.first_name, last_name=user.last_name)
+            dbconfig.insertUser(user_id=user.id, username=user.username, first_name=user.first_name,
+                                last_name=user.last_name)
         else:
             print("ALREADY HAVE THAT USER")
         print("INSERTING THESIS")
         dbthesis = dbconfig.getThesisByBody(" ".join(args))
         if not dbthesis:
             print("ADDING THESIS")
-            dbconfig.insertThesis(init_id=message.message_id, chat_id=message.chat.id, user_id=user.id, body=" ".join(args))
+            dbconfig.insertThesis(init_id=message.message_id, chat_id=message.chat.id, user_id=user.id,
+                                  body=" ".join(args))
             bot.sendMessage(chat_id=message.chat_id, text="Thesis added!")
         else:
             print("ALREADY HAVE THAT THESIS")
@@ -81,6 +95,7 @@ def thesis(bot, update, args):
 def stopAll(signum=None, frame=None):
     print("STOPPING")
     dbconfig.close()
+
 
 TOKEN = os.environ.get("TOKEN")
 if not TOKEN:
