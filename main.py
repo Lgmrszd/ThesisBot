@@ -1,12 +1,11 @@
-import json
 import os.path
-import time
 import datetime
-import telegram
 import dbconfig
-from telegram import User
-from telegram.ext import Updater, CommandHandler, MessageHandler, typehandler, Filters
+import logging
+from telegram import User, InlineQueryResultArticle, InputTextMessageContent, KeyboardButton, ReplyKeyboardMarkup, InlineKeyboardButton, InlineKeyboardMarkup
+from telegram.ext import Updater, CommandHandler, InlineQueryHandler
 
+logging.basicConfig(format='[%(asctime)s][%(levelname)s]:%(message)s', level=logging.DEBUG, datefmt='%d.%m.%Y %H:%M:%S')
 
 def c_help(bot, update):
     bot.sendMessage(chat_id=update.message.chat_id,
@@ -77,6 +76,7 @@ def thesis(bot, update, args):
             print("ALREADY HAVE THAT THESIS")
             bot.sendMessage(chat_id=message.chat_id, text="This thesis already exists!")
         print("DONE")
+
 
 def stopAll(signum=None, frame=None):
     print("STOPPING")
