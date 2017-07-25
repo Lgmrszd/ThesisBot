@@ -16,9 +16,11 @@ def c_help(bot, update):
 /last30minsTheses - get theses for last 30 minutes
 /last5hoursTheses - get theses for last 5 hours""")
 
+
 def fromUTCtoTZ(dt):
     tz=datetime.timezone(datetime.timedelta(hours=3))
     return dt.astimezone(tz)
+
 
 def last30minsTheses(bot, update):
     message = update.message
@@ -32,6 +34,7 @@ def last30minsTheses(bot, update):
     bot.sendMessage(chat_id=message.chat_id,
                     text="Theses in last 30 minutes:\n\n"+"\n".join(str_theses))
 
+
 def last5hoursTheses(bot, update):
     message = update.message
     theses = dbconfig.getLast5hoursTheses(message.chat_id)
@@ -43,7 +46,6 @@ def last5hoursTheses(bot, update):
         str_theses.append(st)
     bot.sendMessage(chat_id=message.chat_id,
                     text="Theses in last 5 hours:\n\n"+"\n".join(str_theses))
-
 
 
 def thesis(bot, update, args):
