@@ -40,7 +40,7 @@ def last30minsTheses(bot, update):
     for t in theses:
         stime = fromUTCtoTZ(t['creation_time']).strftime('%m.%d %H:%M:%S')
         tbody = t['body']
-        st = thesisToText("30 minutes", tbody, st)
+        st = thesisToText("30 minutes", tbody, stime)
         str_theses.append(st)
     bot.sendMessage(chat_id=message.chat_id,
                     text="Theses in last 30 minutes:\n\n" + "\n".join(str_theses))
@@ -51,9 +51,9 @@ def last5hoursTheses(bot, update):
     theses = dbconfig.getLast5hoursTheses(message.chat_id)
     str_theses = []
     for t in theses:
-        stime = fromUTCtoTZ(t['creation_time']).strftime('%Y-%m-%d %H:%M:%S')
+        stime = fromUTCtoTZ(t['creation_time']).strftime('%m.%d %H:%M:%S')
         tbody = t['body']
-        st = "thesis time: %s\ntext:\n%s" % (stime, tbody)
+        st = thesisToText("5 hours", tbody, stime)
         str_theses.append(st)
     bot.sendMessage(chat_id=message.chat_id,
                     text="Theses in last 5 hours:\n\n" + "\n".join(str_theses))
