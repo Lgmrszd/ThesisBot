@@ -5,7 +5,7 @@ import logging
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import Updater, CommandHandler, CallbackQueryHandler
 
-logging.basicConfig(format='[%(asctime)s][%(levelname)s]:%(message)s', level=logging.DEBUG, datefmt='%d.%m.%Y %H:%M:%S')
+logging.basicConfig(format='[%(asctime)s][%(levelname)s]:%(message)s', level=logging.WARNING, datefmt='%d.%m.%Y %H:%M:%S')
 
 
 def gen_kb():
@@ -30,40 +30,13 @@ def c_help(bot, update):
     bot.sendMessage(chat_id=update.message.chat_id,
                     text="""Supported commands:
 /help - Show this
-/thesis thesis text
-/last30minsTheses - get theses for last 30 minutes
-/last5hoursTheses - get theses for last 5 hours""")
+/thesis thesis text - add new thesis
+/lt - get latest theses""")
 
 
 def fromUTCtoTZ(dt):
     tz = datetime.timezone(datetime.timedelta(hours=3))
     return dt.astimezone(tz)
-
-
-def last30minsTheses(bot, update):
-    message = update.message
-    theses = dbconfig.getLast30minsTheses(message.chat_id)
-    str_theses = []
-    for t in theses:
-        stime = fromUTCtoTZ(t['creation_time']).strftime('%m.%d %H:%M:%S')
-        tbody = t['body']
-        st = thesisToText(tbody, stime)
-        str_theses.append(st)
-    bot.sendMessage(chat_id=message.chat_id,
-                    text="Theses in last 30 minutes:\n\n" + "\n".join(str_theses))
-
-
-def last5hoursTheses(bot, update):
-    message = update.message
-    theses = dbconfig.getLast5hoursTheses(message.chat_id)
-    str_theses = []
-    for t in theses:
-        stime = fromUTCtoTZ(t['creation_time']).strftime('%m.%d %H:%M:%S')
-        tbody = t['body']
-        st = thesisToText(tbody, stime)
-        str_theses.append(st)
-    bot.sendMessage(chat_id=message.chat_id,
-                    text="Theses in last 5 hours:\n\n" + "\n".join(str_theses))
 
 
 def lastThesesByIntervalToText(chat_id, dt):
@@ -155,10 +128,6 @@ help_handler = CommandHandler('help', c_help)
 dp.add_handler(help_handler)
 thesis_handler = CommandHandler('thesis', thesis, pass_args=True)
 dp.add_handler(thesis_handler)
-last30minsTheses_handler = CommandHandler('last30minsTheses', last30minsTheses)
-dp.add_handler(last30minsTheses_handler)
-last5hoursTheses_handler = CommandHandler('last5hoursTheses', last5hoursTheses)
-dp.add_handler(last5hoursTheses_handler)
 lastThesesByInterval_handler = CommandHandler('lt', lastThesesByInterval)
 dp.add_handler(lastThesesByInterval_handler)
 cb_handler = CallbackQueryHandler(onCallback)

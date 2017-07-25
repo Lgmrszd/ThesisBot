@@ -66,17 +66,6 @@ def getTodayTheses(chat_id):
     else:
         return dictres
 
-def getLast5minsTheses(chat_id):
-    return getLastThesesByTime(chat_id, '00:05:00')
-
-def getLast30minsTheses(chat_id):
-    return getLastThesesByTime(chat_id, '00:30:00')
-
-def getLast1hourTheses(chat_id):
-    return getLastThesesByTime(chat_id, '01:00:00')
-
-def getLast5hoursTheses(chat_id):
-    return getLastThesesByTime(chat_id, '05:00:00')
 
 def insertUser(user_id, username, first_name, last_name):
     global db
