@@ -13,17 +13,17 @@ def gen_kb():
     h1 = InlineKeyboardButton("1 hour", callback_data="lt:01:00:00")
     h5 = InlineKeyboardButton("5 hours", callback_data="lt:05:00:00")
     h10 = InlineKeyboardButton("10 hours", callback_data="lt:10:00:00")
-    h24 = InlineKeyboardButton("1 day", callback_data="lt:24:59:00")
+    h24 = InlineKeyboardButton("1 day", callback_data="lt:24:00:00")
     d = InlineKeyboardButton("DELET THIS", callback_data="DELETE")
     kb = InlineKeyboardMarkup(inline_keyboard=[[m30, h1, h5, h10, h24], [d]])
     return kb
 
 
-def thesisToText(text, stime):
+def thesisToText(text, stime, t_id):
     return ("\n"
             "✅ %s \n"
-            "~ published at %s \n"
-            "\n") % (text, stime)
+            "~ published at %s, id %d \n"
+            "\n") % (text, stime, t_id)
 
 
 def c_help(bot, update):
@@ -44,9 +44,11 @@ def lastThesesByIntervalToText(chat_id, dt):
     str_theses = []
     if theses:
         for t in theses:
+            print(t)
             stime = fromUTCtoTZ(t['creation_time']).strftime('%m.%d %H:%M:%S')
             tbody = t['body']
-            st = thesisToText(tbody, stime)
+            t_id = t['init_id']
+            st = thesisToText(tbody, stime, t_id)
             str_theses.append(st)
         str_theses_r = "—— ‼️ Theses in last %s ‼️ ——\n" % dt + "\n".join(str_theses) + "—— end of theses ——"
         return str_theses_r
@@ -61,6 +63,28 @@ def lastThesesByInterval(bot, update):
     bot.sendMessage(chat_id=message.chat_id,
                     reply_markup=gen_kb(),
                     text=str_theses)
+
+
+def thesisById(bot, update, args):
+    message = update.message
+    if len(args) == 1:
+        thesis = dbconfig.getThesisByIds(int(args[0]), message.chat_id)
+        print(thesis)
+        if thesis:
+            stime = fromUTCtoTZ(thesis['creation_time']).strftime('%m.%d %H:%M:%S')
+            tbody = thesis['body']
+            t_id = thesis['init_id']
+            str_thesis = thesisToText(tbody, stime, t_id)
+            bot.sendMessage(chat_id=message.chat_id,
+                            text=str_thesis,
+                            reply_to_message_id = int(args[0]))
+        else:
+            bot.sendMessage(chat_id=message.chat_id,
+                            text="There is no thesis with this id")
+
+    else:
+        bot.sendMessage(chat_id=message.chat_id,
+                        text="wrong argument")
 
 
 def onCallback(bot, update):
@@ -79,7 +103,7 @@ def onCallback(bot, update):
         bot.editMessageText(chat_id=c_id, message_id=m_id, text=str_theses, reply_markup=gen_kb())
 
 
-def thesis(bot, update, args):
+def newThesis(bot, update, args):
     message = update.message
     if len(args) == 0:
         print("NOT OK")
@@ -126,10 +150,12 @@ dp = updater.dispatcher
 # Add handlers for Telegram messages
 help_handler = CommandHandler('help', c_help)
 dp.add_handler(help_handler)
-thesis_handler = CommandHandler('thesis', thesis, pass_args=True)
+thesis_handler = CommandHandler('thesis', newThesis, pass_args=True)
 dp.add_handler(thesis_handler)
 lastThesesByInterval_handler = CommandHandler('lt', lastThesesByInterval)
 dp.add_handler(lastThesesByInterval_handler)
+thesisById_handler = CommandHandler('id_thesis', thesisById, pass_args=True)
+dp.add_handler(thesisById_handler)
 cb_handler = CallbackQueryHandler(onCallback)
 dp.add_handler(cb_handler)
 updater.start_polling()
