@@ -60,9 +60,11 @@ def lastThesesByInterval(bot, update):
     dt = "00:30:00"
     message = update.message
     str_theses = lastThesesByIntervalToText(message.chat_id, dt)
-    bot.sendMessage(chat_id=message.chat_id,
+    b_msg = bot.sendMessage(chat_id=message.chat_id,
                     reply_markup=gen_kb(),
                     text=str_theses)
+    user = update.message.from_user
+    dbconfig.insertBotMessage(chat_id=message.chat_id, message_id=b_msg.message_id, owner_id=user.id)
 
 
 def thesisById(bot, update, args):
@@ -94,13 +96,17 @@ def onCallback(bot, update):
     m_id = cb.message.message_id
     c_id = cb.message.chat.id
     print(m_id, c_id)
-    if cb.data == "DELETE":
-        bot.deleteMessage(chat_id=c_id, message_id=m_id)
-    else:
-        dt = cb.data[3:]
-        message = cb.message
-        str_theses = lastThesesByIntervalToText(message.chat_id, dt)
-        bot.editMessageText(chat_id=c_id, message_id=m_id, text=str_theses, reply_markup=gen_kb())
+    b_msg = dbconfig.getBotMessage(c_id, m_id)
+    owner_id = b_msg["owner_id"]
+    if owner_id == cb.from_user.id:
+        if cb.data == "DELETE":
+            bot.deleteMessage(chat_id=c_id, message_id=m_id)
+        else:
+            dt = cb.data[3:]
+            message = cb.message
+            str_theses = lastThesesByIntervalToText(message.chat_id, dt)
+            bot.editMessageText(chat_id=c_id, message_id=m_id, text=str_theses, reply_markup=gen_kb())
+            cb.answer
 
 
 def newThesis(bot, update, args):
@@ -129,7 +135,8 @@ def newThesis(bot, update, args):
             print("ADDING THESIS")
             dbconfig.insertThesis(init_id=message.message_id, chat_id=message.chat.id, user_id=user.id,
                                   body=" ".join(args))
-            bot.sendMessage(chat_id=message.chat_id, text="Thesis added!")
+            b_msg = bot.sendMessage(chat_id=message.chat_id, text="Thesis added!")
+            dbconfig.insertBotMessage(chat_id=message.chat_id, message_id=b_msg.message_id, owner_id=user.id)
         else:
             print("ALREADY HAVE THAT THESIS")
             bot.sendMessage(chat_id=message.chat_id, text="This thesis already exists!")
