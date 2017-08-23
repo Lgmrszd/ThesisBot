@@ -69,7 +69,7 @@ def getTodayTheses(chat_id):
 
 def insertUser(user_id, username, first_name, last_name):
     global db
-    ts = time.time()
+    # ts = time.time()
     row = {"user_id":user_id}
     if username:
         row["username"] = username
@@ -80,6 +80,7 @@ def insertUser(user_id, username, first_name, last_name):
     db.insert('users', row=row)
     db.commit()
 
+
 def getUserById(user_id):
     global db
     query = db.query("SELECT * FROM users WHERE user_id = %d;"%user_id)
@@ -88,6 +89,24 @@ def getUserById(user_id):
         return False
     else:
         return dictres[0]
+
+
+def insertBotMessage(chat_id, message_id, owner_id):
+    global db
+    row = {"chat_id": chat_id, "message_id": message_id, "owner_id": owner_id}
+    db.insert('bot_messages', row=row)
+    db.commit()
+
+
+def getBotMessage(chat_id, message_id):
+    global db
+    query = db.query("SELECT * FROM bot_messages WHERE chat_id = %d AND message_id = %d;" % (chat_id, message_id))
+    dictres = query.dictresult()
+    if len(dictres) == 0:
+        return False
+    else:
+        return dictres[0]
+
 
 def close():
     db.close()
