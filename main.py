@@ -1,12 +1,20 @@
 import os.path
 import datetime
-import dbconfig
+import dbconnect
 import logging
+import urllib.parse as urlparse
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import Updater, CommandHandler, CallbackQueryHandler
 
 logging.basicConfig(format='[%(asctime)s][%(levelname)s]:%(message)s', level=logging.WARNING, datefmt='%d.%m.%Y %H:%M:%S')
 
+urlparse.uses_netloc.append("postgres")
+if os.environ.get("DATABASE_URL"):
+    db_url = os.environ.get("DATABASE_URL")
+else:
+    raise EnvironmentError("DATABASE_URL not found")
+
+bot_db = dbconnect.BotDB(db_url)
 
 def gen_kb():
     m30 = InlineKeyboardButton("30 minutes", callback_data="lt:00:30:00")
@@ -40,7 +48,7 @@ def fromUTCtoTZ(dt):
 
 
 def lastThesesByIntervalToText(chat_id, dt):
-    theses = dbconfig.getLastThesesByTime(chat_id, dt)
+    theses = bot_db.getLastThesesByTime(chat_id, dt)
     str_theses = []
     if theses:
         for t in theses:
@@ -64,13 +72,13 @@ def lastThesesByInterval(bot, update):
                     reply_markup=gen_kb(),
                     text=str_theses)
     user = update.message.from_user
-    dbconfig.insertBotMessage(chat_id=message.chat_id, message_id=b_msg.message_id, owner_id=user.id)
+    bot_db.insertBotMessage(chat_id=message.chat_id, message_id=b_msg.message_id, owner_id=user.id)
 
 
 def thesisById(bot, update, args):
     message = update.message
     if len(args) == 1:
-        thesis = dbconfig.getThesisByIds(int(args[0]), message.chat_id)
+        thesis = bot_db.getThesisByIds(int(args[0]), message.chat_id)
         print(thesis)
         if thesis:
             stime = fromUTCtoTZ(thesis['creation_time']).strftime('%m.%d %H:%M:%S')
@@ -96,7 +104,7 @@ def onCallback(bot, update):
     m_id = cb.message.message_id
     c_id = cb.message.chat.id
     print(m_id, c_id)
-    b_msg = dbconfig.getBotMessage(c_id, m_id)
+    b_msg = bot_db.getBotMessage(c_id, m_id)
     owner_id = b_msg["owner_id"]
     if owner_id == cb.from_user.id:
         if cb.data == "DELETE":
@@ -122,21 +130,21 @@ def newThesis(bot, update, args):
         print("OK")
         user = update.message.from_user
         print("INSERTING USER")
-        dbuser = dbconfig.getUserById(user.id)
+        dbuser = bot_db.getUserById(user.id)
         if not dbuser:
             print("ADDING USER")
-            dbconfig.insertUser(user_id=user.id, username=user.username, first_name=user.first_name,
+            bot_db.insertUser(user_id=user.id, username=user.username, first_name=user.first_name,
                                 last_name=user.last_name)
         else:
             print("ALREADY HAVE THAT USER")
         print("INSERTING THESIS")
-        dbthesis = dbconfig.getThesisByBody(" ".join(args))
+        dbthesis = bot_db.getThesisByBody(" ".join(args))
         if not dbthesis:
             print("ADDING THESIS")
-            dbconfig.insertThesis(init_id=message.message_id, chat_id=message.chat.id, user_id=user.id,
+            bot_db.insertThesis(init_id=message.message_id, chat_id=message.chat.id, user_id=user.id,
                                   body=" ".join(args))
             b_msg = bot.sendMessage(chat_id=message.chat_id, text="Thesis added!")
-            dbconfig.insertBotMessage(chat_id=message.chat_id, message_id=b_msg.message_id, owner_id=user.id)
+            bot_db.insertBotMessage(chat_id=message.chat_id, message_id=b_msg.message_id, owner_id=user.id)
         else:
             print("ALREADY HAVE THAT THESIS")
             bot.sendMessage(chat_id=message.chat_id, text="This thesis already exists!")
@@ -145,7 +153,7 @@ def newThesis(bot, update, args):
 
 def stopAll(signum=None, frame=None):
     print("STOPPING")
-    dbconfig.close()
+    bot_db.close()
 
 
 TOKEN = os.environ.get("TOKEN")
