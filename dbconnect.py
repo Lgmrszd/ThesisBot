@@ -6,6 +6,7 @@ import datetime
 
 class BotDB:
     def __init__(self, db_url):
+        urlparse.uses_netloc.append("postgres")
         self.__db_url = db_url
         url = urlparse.urlparse(db_url)
         self.__db = DB(
