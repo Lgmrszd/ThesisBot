@@ -42,7 +42,7 @@ class ThesisBot:
         self.add_command_handler("help", c_help)
         self.add_command_handler("thesis", self.new_thesis, pass_args=True)
         self.add_command_handler("lt", self.lastThesesByInterval)
-        self.add_command_handler("id_thesis", self.thesisById)
+        self.add_command_handler("id_thesis", self.thesisById, pass_args=True)
         self.add_callback_handler(self.on_callback)
 
     def test(self, bot, update):
